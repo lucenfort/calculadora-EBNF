@@ -1,39 +1,78 @@
+"""
+Calculadora para expressões matemáticas simples usando EBNF
+
+
+Explicação do código:
+
+A função eval_expr avalia uma expressão matemática simples.
+Ela recebe uma string expr como entrada e retorna o resultado 
+da expressão. A função primeiro verifica se a expressão é 
+válida usando a EBNF definida na variável expr_pattern. Se a
+expressão não for válida, a função levanta uma exceção ValueError.
+Se a expressão for válida, a função usa a função eval do Python 
+para avaliar a expressão. Se houver uma tentativa de divisão por 
+zero, a função levanta uma exceção ZeroDivisionError.
+
+A função main é a função principal que interage com o usuário. Ela 
+pede ao usuário para digitar uma expressão matemática simples, chama 
+a função eval_expr para avaliar a expressão e exibe o resultado.
+
+O bloco if __name__ == '__main__': garante que a função main seja 
+executada somente se o arquivo for executado diretamente, não se for 
+importado como um módulo em outro arquivo.
+
+"""
+
 import re
 
-# Define as regras da gramática usando a sintaxe EBNF
-expr = r"(?P<expr>(?P<term>(?P<factor>(?P<number>\d+)|\((?P<expr>)\)))(?P<op1>[*/](?P<factor>(?P<number>\d+)|\((?P>expr)\)))*)"
-term = r"(?P<term>(?P<factor>(?P<number>\d+)|\((?P<expr>)\)))(?P<op2>[+-](?P<factor>(?P<number>\d+)|\((?P>expr)\)))*)"
-factor = r"(?P<factor>(?P<number>\d+)|\((?P<expr>)\))"
-number = r"(?P<number>\d+)"
 
+def eval_expr(expr):
+    """
+    Avalia uma expressão matemática simples.
 
-# Define uma função para avaliar uma expressão matemática
-def eval_expr(match):
-    expr = match.group()
-    return str(eval(expr))
+    Args:
+        expr (str): a expressão matemática a ser avaliada.
 
+    Returns:
+        O resultado da expressão matemática.
 
-# Loop principal
-while True:
-    # Lê uma expressão matemática do usuário
-    expr = input("Digite uma expressão matemática (ou 'q' para sair): ")
+    Raises:
+        ValueError: se a expressão contiver caracteres inválidos.
+        ZeroDivisionError: se houver uma tentativa de divisão por zero.
+    """
 
-    # Sai do loop se o usuário digitar 'q'
-    if expr.lower() == "q":
-        break
+    # Define a EBNF para a expressão matemática simples
+    expr_pattern = r'\s*((\d+(\.\d*)?)|(\.\d+))\s*([+\-*/]\s*((\d+(\.\d*)?)|(\.\d+))\s*)*'
 
-    # Avalia a expressão matemática usando as regras da gramática EBNF
-    expr = re.sub(
-        expr,
-        eval_expr,
-        re.sub(
-            factor, eval_expr, re.sub(term, eval_expr, re.sub(expr, eval_expr, expr))
-        ),
-    )
+    # Verifica se a expressão é válida
+    if not re.fullmatch(expr_pattern, expr):
+        raise ValueError('Expressão inválida')
 
-    # Imprime o resultado da avaliação da expressão matemática
+    # Avalia a expressão
     try:
-        result = float(expr)
-        print(f"Resultado: {result}")
-    except:
-        print("Erro ao avaliar a expressão.")
+        return eval(expr)
+    except ZeroDivisionError:
+        raise ZeroDivisionError('Divisão por zero')
+
+
+def main():
+    """
+    Função principal que recebe a entrada do usuário e exibe o resultado da expressão.
+    """
+
+    # Recebe a entrada do usuário
+    expr = input('Digite uma expressão matemática simples: ')
+
+    # Avalia a expressão
+    try:
+        result = eval_expr(expr)
+    except (ValueError, ZeroDivisionError) as e:
+        print(f'Erro: {e}')
+        return
+
+    # Exibe o resultado da expressão
+    print(f'Resultado: {result}')
+
+
+if __name__ == '__main__':
+    main()
